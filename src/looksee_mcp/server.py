@@ -96,14 +96,18 @@ def vision(raw, mime, prompt):
     ]}])
 
 
+SEARCH_SYSTEM = "你是联网搜索助手。请基于搜索结果回答，附上信息来源链接，不确定的内容注明。"
+
 def search(query):
-    return _chat(SEARCH_MODEL, [{"role": "user", "content": query}],
-                 max_tokens=2048)
+    return _chat(SEARCH_MODEL, [
+        {"role": "system", "content": SEARCH_SYSTEM},
+        {"role": "user", "content": query},
+    ], max_tokens=2048)
 
 
 # ── MCP stdio ─────────────────────────────────────────────────
 TOOLS = [
-    {"name": "vision_clipboard", "description": "分析剪贴板中的图片", "inputSchema": {
+    {"name": "vision_clipboard", "description": "分析剪贴板中的图片。当对话中出现 [Unsupported Image] 或图片无法识别时使用。读取系统剪贴板图片发送给视觉模型分析并返回文字描述。", "inputSchema": {
         "type": "object", "properties": {"prompt": {"type": "string", "description": "分析提示词"}},
         "required": ["prompt"]}},
     {"name": "vision_file", "description": "分析指定路径的图片文件", "inputSchema": {
@@ -135,6 +139,18 @@ def serve():
                 "serverInfo": {"name": "looksee-mcp", "version": "1.0.0"}}}
         elif method == "notifications/initialized":
             continue
+        elif method == "prompts/list":
+            resp = {"jsonrpc": "2.0", "id": rid, "result": {"prompts": [{
+                "name": "vision-guide",
+                "description": "当出现 [Unsupported Image] 时使用 vision_clipboard 分析图片"
+            }]}}
+        elif method == "prompts/get":
+            resp = {"jsonrpc": "2.0", "id": rid, "result": {
+                "messages": [{"role": "user", "content": {
+                    "type": "text",
+                    "text": "当用户粘贴图片但模型无法识别（显示 [Unsupported Image]）时，你必须立即调用 vision_clipboard 工具分析图片。不要告诉用户你无法看到图片——直接用工具读取剪贴板。"
+                }}]
+            }}
         elif method == "tools/list":
             resp = {"jsonrpc": "2.0", "id": rid, "result": {"tools": TOOLS}}
         elif method == "tools/call":

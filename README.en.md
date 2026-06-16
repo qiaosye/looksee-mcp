@@ -64,6 +64,16 @@ Cmd+Shift+P → `Developer: Reload Window`, or type `/mcp` in Claude Code to ver
 - Drop images into your project folder → "Analyze all images in images/"
 - "Search for XXX" → AI-powered web search
 
+**5. Enable auto-trigger**
+
+Claude Code won't call MCP tools automatically. Add this to `~/.claude/CLAUDE.md` (global) or your project `CLAUDE.md`:
+
+```markdown
+## Image Analysis
+
+When you see `[Unsupported Image]`, call the vision_clipboard MCP tool immediately.
+```
+
 ## Tools
 
 | Tool               | What it does                          | When to use                           |
