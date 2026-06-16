@@ -98,6 +98,39 @@ def vision(raw, mime, prompt):
 
 SEARCH_SYSTEM = "你是联网搜索助手。请基于搜索结果回答，附上信息来源链接，不确定的内容注明。"
 
+def _doctor():
+    lines = []
+    # 1. API Key
+    if not API_KEY:
+        lines.append("❌ LOOKSEE_API_KEY 未设置")
+    else:
+        lines.append(f"✅ LOOKSEE_API_KEY 已设置 ({API_KEY[:8]}***)")
+    # 2. Base URL 可达性
+    try:
+        req = urllib.request.Request(BASE_URL, method="HEAD",
+            headers={"User-Agent": UA, "Authorization": f"Bearer {API_KEY}"})
+        urllib.request.urlopen(req, timeout=10)
+        lines.append(f"✅ LOOKSEE_BASE_URL 可达: {BASE_URL}")
+    except Exception as e:
+        lines.append(f"❌ LOOKSEE_BASE_URL 不可达: {BASE_URL} ({e})")
+    # 3. Vision Model
+    if API_KEY and lines[-1].startswith("✅"):
+        r = _chat(VISION_MODEL, [{"role": "user", "content": "ping, reply 'pong' only"}], max_tokens=8)
+        if "pong" in r.get("text", "").lower():
+            lines.append(f"✅ LOOKSEE_VISION_MODEL 正常: {VISION_MODEL}")
+        else:
+            lines.append(f"❌ LOOKSEE_VISION_MODEL 异常 ({VISION_MODEL}): {r.get('error', r.get('text','?'))}")
+    else:
+        lines.append(f"⚠️  跳过模型检测（前置条件未满足）")
+    # 4. Search Model
+    s = _chat(SEARCH_MODEL, [{"role": "user", "content": "ping, reply 'pong' only"}], max_tokens=8)
+    if "pong" in s.get("text", "").lower():
+        lines.append(f"✅ LOOKSEE_SEARCH_MODEL 正常: {SEARCH_MODEL}")
+    else:
+        lines.append(f"❌ LOOKSEE_SEARCH_MODEL 异常 ({SEARCH_MODEL}): {s.get('error', s.get('text','?'))}")
+    return {"text": "\n".join(lines)}
+
+
 def search(query):
     return _chat(SEARCH_MODEL, [
         {"role": "system", "content": SEARCH_SYSTEM},
@@ -123,6 +156,8 @@ TOOLS = [
     {"name": "web_search", "description": "通过 AI 进行联网搜索", "inputSchema": {
         "type": "object", "properties": {"query": {"type": "string", "description": "搜索关键词或问题"}},
         "required": ["query"]}},
+    {"name": "doctor", "description": "一键诊断配置状态：检查 API Key、Base URL 可达性、Vision/Search 模型是否正常", "inputSchema": {
+        "type": "object", "properties": {}}},
 ]
 
 
@@ -167,13 +202,22 @@ def serve():
                 result = vision(raw, mime, args.get("prompt", "描述图片")) if raw else {"error": f"文件不存在: {args['path']}"}
             elif name == "vision_dir":
                 files = _scan_dir(args["path"])
-                result = {"error": f"目录无图片: {args['path']}"} if not files else {
-                    "text": "\n\n---\n\n".join(
-                        f"**{os.path.basename(f)}**: {vision(*_from_file(f), args.get('prompt', '描述图片')).get('text', '?')}"
-                        for f in files
-                    )}
+                if not files:
+                    result = {"error": f"目录无图片: {args['path']}"}
+                else:
+                    parts = []
+                    for f in files:
+                        try:
+                            raw, mime = _from_file(f)
+                            v = vision(raw, mime, args.get("prompt", "描述图片"))
+                            parts.append(f"**{os.path.basename(f)}**: {v.get('text', '?')}")
+                        except Exception as e:
+                            parts.append(f"**{os.path.basename(f)}**: ❌ 处理失败 ({e})")
+                    result = {"text": "\n\n---\n\n".join(parts)}
             elif name == "web_search":
                 result = search(args.get("query", ""))
+            elif name == "doctor":
+                result = _doctor()
             else:
                 resp = {"jsonrpc": "2.0", "id": rid, "error": {"code": -32601, "message": f"unknown: {name}"}}
                 sys.stdout.write(json.dumps(resp, ensure_ascii=False) + "\n")

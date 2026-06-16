@@ -3,6 +3,9 @@
 
 import subprocess
 import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent
 
 subprocess.run(
     [
@@ -12,10 +15,9 @@ subprocess.run(
         "--onefile",
         "--name",
         "looksee-mcp",
-        "--add-data",
-        ".env.example:.",
-        "src/looksee_mcp/server.py",
+        str(ROOT / "src" / "looksee_mcp" / "server.py"),
     ],
     check=True,
+    cwd=str(ROOT),
 )
 print("✅ 二进制文件: dist/looksee-mcp")
