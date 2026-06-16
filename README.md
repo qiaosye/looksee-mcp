@@ -64,16 +64,6 @@ Cmd+Shift+P → `Developer: Reload Window`，或在 Claude Code 面板输入 `/m
 - 拖图片到项目文件夹 → "分析 images/ 下所有图片"
 - "帮我搜一下 XXX" → 联网搜索
 
-**5. 设置自动触发**
-
-Claude Code 看到图片不会自动调 MCP——需要在 CLAUDE.md 里加规则。编辑 `~/.claude/CLAUDE.md`（全局）或项目的 `CLAUDE.md`，添加：
-
-```markdown
-## 图片分析
-
-当前模型不支持图片时，看到 `[Unsupported Image]` 立即调用 vision_clipboard。
-```
-
 ## 工具
 
 | 工具               | 做什么                 | 什么时候用             |
