@@ -84,6 +84,15 @@ Cmd+Shift+P → `Developer: Reload Window`，或在 Claude Code 面板输入 `/m
 
 ## License
 
+## 后续功能
+
+- 🩺 `doctor` — 一键诊断连接状态
+- 🚀 二进制发布（pip install / brew install）
+- 🌐 图片 URL 直接分析
+- 📦 更多推出中…
+
+## License
+
 Apache 2.0 — 详见 [LICENSE](LICENSE)
 
 ---
