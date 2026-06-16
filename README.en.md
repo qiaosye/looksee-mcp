@@ -84,4 +84,8 @@ Cmd+Shift+P → `Developer: Reload Window`, or type `/mcp` in Claude Code to ver
 
 ## License
 
-[Apache 2.0](LICENSE)
+Apache 2.0 — see [LICENSE](LICENSE)
+
+---
+
+🏅 Recognized by the [LINUX DO](https://linux.do/) community.

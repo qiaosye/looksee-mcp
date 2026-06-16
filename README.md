@@ -85,3 +85,7 @@ Cmd+Shift+P → `Developer: Reload Window`，或在 Claude Code 面板输入 `/m
 ## License
 
 Apache 2.0 — 详见 [LICENSE](LICENSE)
+
+---
+
+🏅 此项目已获 [LINUX DO](https://linux.do/) 社区链接认可。
