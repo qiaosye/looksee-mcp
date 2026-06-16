@@ -13,6 +13,9 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 
+[project.optional-dependencies]
+build = ["pyinstaller>=6", "pillow"]
+
 [project.scripts]
 looksee-mcp = "looksee_mcp.server:serve"
 
